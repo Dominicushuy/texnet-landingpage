@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import DynamicHeader from "./DynamicHeader";
+import EnhancedHeader from "./Header";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 interface LayoutProps {
@@ -15,8 +15,7 @@ export default function Layout({ children, showFooter = true }: LayoutProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header sẽ hiển thị trên Hero Section */}
-      <DynamicHeader />
+      <EnhancedHeader />
 
       {/* Main content - không thêm padding-top ở đây để Hero section full-bleed */}
       <main className="flex-grow">{children}</main>
