@@ -2,7 +2,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useAnimation,
+  useScroll,
+  useTransform,
+  MotionConfig,
+} from "framer-motion";
 import { cn } from "@/utils/cn";
 import EnhancedScrollReveal from "@/components/ui/ScrollReveal";
 import AnimatedText from "@/components/ui/AnimatedText";
@@ -11,6 +18,7 @@ import Button from "@/components/ui/Button";
 import WavePattern from "@/components/illustrations/WavePattern";
 import { debounce } from "@/utils/cn";
 import ProcessFlowIllustration from "@/components/illustrations/ProcessFlow";
+import { ArrowRightIcon } from "@/components/icons/BasicIcons";
 
 interface ProcessStep {
   id: string;
@@ -110,20 +118,13 @@ const processSteps: ProcessStep[] = [
 export default function ProcessFlow() {
   const [activeTab, setActiveTab] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [prevTab, setPrevTab] = useState(0);
   const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+  const [activePointIndex, setActivePointIndex] = useState(-1);
+  const [initialized, setInitialized] = useState(false);
+
   const tabsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const indicatorRef = useRef<HTMLDivElement>(null);
-  const indicatorControls = useAnimation();
   const contentControls = useAnimation();
-  const [activePointIndex, setActivePointIndex] = useState(-1);
-  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
-  const [indicatorStyles, setIndicatorStyles] = useState({
-    width: 0,
-    x: 0,
-    opacity: 0,
-  });
 
   // For scroll-based progress indicator
   const { scrollYProgress } = useScroll({
@@ -146,6 +147,9 @@ export default function ProcessFlow() {
     const handleResize = debounce(checkIfMobile, 100);
     window.addEventListener("resize", handleResize);
 
+    // Set initialized after first render
+    setInitialized(true);
+
     // Clean up
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -154,7 +158,6 @@ export default function ProcessFlow() {
   const handleTabChange = (index: number) => {
     if (index === activeTab) return;
 
-    setPrevTab(activeTab);
     setDirection(index > activeTab ? 1 : -1);
     setActiveTab(index);
     setActivePointIndex(-1); // Reset point highlight
@@ -165,65 +168,27 @@ export default function ProcessFlow() {
     });
   };
 
-  // Update tab indicator position
-  const updateIndicatorPosition = () => {
-    if (!tabsRef.current) return;
+  // Scroll active tab into view on mobile
+  useEffect(() => {
+    if (!isMobile || !tabsRef.current || !initialized) return;
 
     const tabElements = tabsRef.current.querySelectorAll(".process-tab");
     const activeTabElement = tabElements[activeTab] as HTMLElement;
 
-    if (!activeTabElement) return;
+    if (activeTabElement) {
+      const tabsContainer = tabsRef.current;
+      const tabRect = activeTabElement.getBoundingClientRect();
+      const containerRect = tabsContainer.getBoundingClientRect();
 
-    const tabRect = activeTabElement.getBoundingClientRect();
-    const containerRect = tabsRef.current.getBoundingClientRect();
+      // Calculate the scroll position to center the tab
+      const scrollLeft = activeTabElement.offsetLeft - containerRect.width / 2 + tabRect.width / 2;
 
-    const width = tabRect.width;
-    const x = tabRect.left - containerRect.left;
-
-    // Update indicator styles
-    setIndicatorStyles({
-      width,
-      x,
-      opacity: 1,
-    });
-
-    // Also use animation controls for smoother transitions
-    indicatorControls.start({
-      width,
-      x,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 500, damping: 30 },
-    });
-
-    // Scroll tab into view on mobile
-    if (isMobile) {
-      activeTabElement.scrollIntoView({
+      tabsContainer.scrollTo({
+        left: scrollLeft,
         behavior: "smooth",
-        block: "nearest",
-        inline: "center",
       });
     }
-  };
-
-  // Animate tab indicator
-  useEffect(() => {
-    // Use requestAnimationFrame for more accurate positioning
-    const frame = requestAnimationFrame(() => {
-      updateIndicatorPosition();
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [activeTab, isMobile]);
-
-  // Re-position indicator on window resize
-  useEffect(() => {
-    const handleResize = debounce(() => {
-      updateIndicatorPosition();
-    }, 100);
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [activeTab]);
+  }, [activeTab, isMobile, initialized]);
 
   // Animated key points with staggered reveal
   const HighlightedPoint = ({
@@ -237,7 +202,7 @@ export default function ProcessFlow() {
   }) => (
     <motion.li
       className={cn(
-        "mb-2 pl-3 border-l-2 transition-colors",
+        "mb-3 pl-3 border-l-2 transition-colors flex items-start",
         isActive ? "border-accent text-accent" : "border-primary-300 text-text",
       )}
       initial={{ opacity: 0, x: -20 }}
@@ -248,7 +213,7 @@ export default function ProcessFlow() {
     >
       <motion.span
         layout
-        className="relative block"
+        className="relative block py-1"
         initial={{ fontWeight: 400 }}
         animate={{ fontWeight: isActive ? 600 : 400 }}
       >
@@ -266,13 +231,6 @@ export default function ProcessFlow() {
       </motion.span>
     </motion.li>
   );
-
-  // Tab animation variants
-  const tabVariants = {
-    inactive: { opacity: 0.7, y: 0 },
-    active: { opacity: 1, y: 0, scale: 1.05 },
-    hover: { opacity: 0.9, y: -2 },
-  };
 
   // Content animation variants
   const contentVariants = {
@@ -338,124 +296,81 @@ export default function ProcessFlow() {
   };
 
   return (
-    <section
-      className="relative py-16 md:py-24 bg-background overflow-hidden"
-      id="process"
-      ref={containerRef}
-    >
-      {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <WavePattern
-          className="absolute inset-0 w-full h-full opacity-50"
-          primaryColor="var(--color-primary-100)"
-          secondaryColor="var(--color-primary-200)"
-          accentColor="var(--color-accent-100)"
-        />
-      </div>
-
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Section header */}
-        <div className="text-center mb-12 md:mb-16">
-          <EnhancedScrollReveal animation="fade-up">
-            <h2 className="text-fluid-h2 font-heading font-bold text-primary mb-4">
-              <AnimatedText text="Quy Trình Làm Việc" highlightWords={["Quy Trình"]} />
-            </h2>
-          </EnhancedScrollReveal>
-          <EnhancedScrollReveal animation="fade-up" delay={0.1}>
-            <div className="max-w-2xl mx-auto text-text-light mb-6">
-              <AnimatedText
-                text="Chúng tôi áp dụng quy trình chuyên nghiệp, minh bạch từ khảo sát đến triển khai, đảm bảo hiệu quả và chất lượng cho mọi dự án."
-                highlightWords={["minh bạch", "hiệu quả", "chất lượng"]}
-                highlightStyle="color"
-                animation="word-fade"
-                staggerDelay={0.02}
-              />
-            </div>
-          </EnhancedScrollReveal>
+    <MotionConfig reducedMotion="user">
+      <section
+        className="relative py-16 md:py-24 bg-background overflow-hidden"
+        id="process"
+        ref={containerRef}
+      >
+        {/* Background decoration */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <WavePattern
+            className="absolute inset-0 w-full h-full opacity-40"
+            primaryColor="var(--color-primary-100)"
+            secondaryColor="var(--color-primary-200)"
+            accentColor="var(--color-accent-100)"
+          />
         </div>
 
-        {/* Progress indicator */}
-        <div className="hidden md:block w-full h-1 bg-primary-100 rounded-full mb-8 overflow-hidden">
-          <motion.div className="h-full bg-accent rounded-full" style={{ width: progressWidth }} />
-        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Section header */}
+          <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+            <EnhancedScrollReveal animation="fade-up">
+              <h2 className="text-fluid-h2 font-heading font-bold text-primary mb-4">
+                <AnimatedText text="Quy Trình Làm Việc" highlightWords={["Quy Trình"]} />
+              </h2>
+            </EnhancedScrollReveal>
+            <EnhancedScrollReveal animation="fade-up" delay={0.1}>
+              <div className="mx-auto text-text-light">
+                <AnimatedText
+                  text="Chúng tôi áp dụng quy trình chuyên nghiệp, minh bạch từ khảo sát đến triển khai, đảm bảo hiệu quả và chất lượng cho mọi dự án."
+                  highlightWords={["minh bạch", "hiệu quả", "chất lượng"]}
+                  highlightStyle="color"
+                  animation="word-fade"
+                  staggerDelay={0.02}
+                />
+              </div>
+            </EnhancedScrollReveal>
+          </div>
 
-        {/* Tabs navigation */}
-        <div className="relative mb-8 md:mb-12 overflow-x-auto hide-scrollbar" ref={tabsRef}>
-          <div
-            className={cn(
-              "flex gap-2 md:gap-4 min-w-max md:min-w-0 md:justify-center",
-              isMobile ? "pb-4" : "mb-2",
-            )}
-          >
-            {processSteps.map((step, index) => (
-              <motion.button
-                key={step.id}
-                className={cn(
-                  "process-tab relative py-3 px-4 md:px-6 rounded-md text-sm md:text-base font-medium transition-all",
-                  activeTab === index ? "text-primary-dark" : "text-text-light hover:text-primary",
-                )}
-                initial="inactive"
-                animate={activeTab === index ? "active" : "inactive"}
-                whileHover={activeTab !== index ? "hover" : ""}
-                variants={tabVariants}
-                onClick={() => handleTabChange(index)}
-              >
-                <div className="flex items-center gap-2">
-                  <motion.span
-                    className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium"
-                    variants={stepNumberVariants}
-                    initial="inactive"
-                    animate={activeTab === index ? "active" : "inactive"}
-                    whileHover={activeTab !== index ? "hover" : ""}
-                  >
-                    {index + 1}
-                  </motion.span>
-                  <span>{step.title}</span>
-                </div>
-              </motion.button>
-            ))}
-
-            {/* Active tab indicator */}
+          {/* Progress indicator */}
+          <div className="hidden md:block w-full h-1 bg-primary-100 rounded-full mb-10 overflow-hidden">
             <motion.div
-              className="absolute bottom-0 h-1 bg-accent rounded-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, ...indicatorControls }}
+              className="h-full bg-accent rounded-full"
+              style={{ width: progressWidth }}
             />
           </div>
-        </div>
 
-        {/* Step visualization for desktop */}
-        <div className="hidden md:block mb-12">
-          <div className="relative flex items-center justify-between py-4 px-4">
-            {/* Step connector line */}
+          {/* Steps visualization for desktop */}
+          <div className="hidden md:flex justify-between items-center mb-12 relative px-4">
+            {/* Background connector line */}
             <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 h-1 bg-primary-100 rounded-full z-0" />
 
             {/* Step dots */}
             {processSteps.map((step, index) => (
-              <motion.div
+              <div
                 key={step.id}
                 className="relative z-10 flex flex-col items-center cursor-pointer"
                 onClick={() => handleTabChange(index)}
-                onMouseEnter={() => setHoveredStep(index)}
-                onMouseLeave={() => setHoveredStep(null)}
               >
+                {/* Step number */}
                 <motion.div
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium z-10 transition-shadow",
-                    activeTab === index ? "shadow-lg shadow-accent/30" : "shadow-sm",
+                    "w-12 h-12 rounded-full flex items-center justify-center text-white text-base font-medium z-10 shadow-md",
+                    activeTab === index ? "bg-accent ring-4 ring-accent/20" : "bg-primary-300",
                   )}
                   variants={stepNumberVariants}
                   initial="inactive"
-                  animate={
-                    activeTab === index ? "active" : hoveredStep === index ? "hover" : "inactive"
-                  }
+                  animate={activeTab === index ? "active" : "inactive"}
+                  whileHover={activeTab !== index ? "hover" : ""}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 >
                   {index + 1}
                 </motion.div>
 
-                {/* Dash animation for active connector */}
+                {/* Progress line */}
                 {index < processSteps.length - 1 && (
-                  <div className="absolute top-1/2 transform -translate-y-1/2 left-8 right-0 h-1 z-0">
+                  <div className="absolute top-1/2 transform -translate-y-1/2 left-12 right-0 h-1 z-0">
                     <motion.div
                       className={cn(
                         "h-full rounded-full",
@@ -469,207 +384,272 @@ export default function ProcessFlow() {
                 )}
 
                 {/* Step label */}
-                <motion.div
-                  className={cn(
-                    "absolute -bottom-6 whitespace-nowrap text-xs font-medium",
-                    activeTab === index ? "text-primary-dark" : "text-text-light",
-                  )}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{
-                    opacity: activeTab === index || hoveredStep === index ? 1 : 0.6,
-                    y: activeTab === index || hoveredStep === index ? 0 : 10,
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {step.shortDescription}
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Content area */}
-        <div className="w-full overflow-hidden">
-          <AnimatePresence mode="wait" custom={direction} initial={false}>
-            <motion.div
-              key={activeTab}
-              custom={direction}
-              variants={contentVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="grid md:grid-cols-2 gap-8 md:gap-12 items-center"
-              transition={{ duration: 0.5 }}
-            >
-              {/* Left side: Text content */}
-              <div>
-                <motion.div className="mb-6" variants={contentItemVariants}>
-                  <AnimatedText
-                    tag="h3"
-                    text={processSteps[activeTab].title}
-                    className="text-fluid-h3 font-heading text-primary mb-3"
-                    animation="slide-up"
-                    highlightStyle="color"
-                  />
-                  <p className="text-text mb-6">{processSteps[activeTab].description}</p>
-                </motion.div>
-
-                <motion.div variants={contentItemVariants}>
-                  <h4 className="text-fluid-h4 font-heading text-primary-dark mb-4">Điểm chính:</h4>
-                  <ul className="space-y-2 mb-6">
-                    <AnimatePresence>
-                      {processSteps[activeTab].keyPoints.map((point, index) => (
-                        <HighlightedPoint
-                          key={`${activeTab}-point-${index}`}
-                          text={point}
-                          index={index}
-                          isActive={activePointIndex === index}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </ul>
-                </motion.div>
-
-                {processSteps[activeTab].ctaText && (
-                  <motion.div variants={contentItemVariants} className="mt-6">
-                    <Button
-                      variant="primary"
-                      icon={<span className="ml-1">→</span>}
-                      iconPosition="right"
-                      motionIntensity="medium"
-                      animateOnAppear
-                      rippleEffect
-                    >
-                      {processSteps[activeTab].ctaText}
-                    </Button>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Right side: Visual illustration */}
-              <motion.div
-                className="bg-background-light rounded-2xl p-8 shadow-lg relative overflow-hidden border border-primary-100"
-                variants={contentItemVariants}
-              >
-                {/* Background decoration */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <WavePattern
-                    className="w-full h-full"
-                    animate={true}
-                    primaryColor="var(--color-primary-100)"
-                    secondaryColor="var(--color-primary-300)"
-                  />
-                </div>
-
-                <div className="relative flex flex-col items-center justify-center h-full min-h-64">
-                  {/* Step number indicator */}
-                  <ProcessFlowIllustration
-                    step={activeTab + 1}
-                    size={220}
-                    variant="colorful"
-                    className="mb-6 transform-gpu"
-                  />
-
-                  {/* Icon with animation */}
-                  <motion.div
-                    className="mb-6 text-accent"
-                    initial={{ scale: 0, rotate: -10, opacity: 0 }}
-                    animate={{
-                      scale: 1,
-                      rotate: 0,
-                      opacity: 1,
-                      transition: {
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                        delay: 0.3,
-                      },
-                    }}
-                  >
-                    {processSteps[activeTab].icon}
-                  </motion.div>
-
-                  <motion.h3
-                    className="text-xl md:text-2xl font-heading text-primary-dark text-center mb-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        delay: 0.4,
-                      },
-                    }}
-                  >
-                    {processSteps[activeTab].title}
-                  </motion.h3>
-
+                <div className="mt-3 text-center">
                   <motion.p
-                    className="text-text-light text-center"
-                    initial={{ opacity: 0, y: 10 }}
+                    className={cn(
+                      "font-medium mb-1",
+                      activeTab === index ? "text-primary-dark" : "text-primary",
+                    )}
                     animate={{
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        delay: 0.5,
-                      },
+                      scale: activeTab === index ? 1.05 : 1,
+                      fontWeight: activeTab === index ? 600 : 500,
                     }}
                   >
-                    {processSteps[activeTab].shortDescription}
+                    {step.title}
+                  </motion.p>
+                  <motion.p
+                    className={cn(
+                      "text-sm hidden md:block",
+                      activeTab === index ? "text-text" : "text-text-light",
+                    )}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{
+                      opacity: activeTab === index ? 1 : 0.7,
+                      height: "auto",
+                    }}
+                  >
+                    {step.shortDescription}
                   </motion.p>
                 </div>
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Mobile step navigation */}
-        <div className="flex md:hidden justify-between mt-8">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={activeTab === 0}
-            onClick={() => activeTab > 0 && handleTabChange(activeTab - 1)}
-            motionIntensity="medium"
-          >
-            Trước
-          </Button>
-          <div className="text-sm text-text-light">
-            {activeTab + 1} / {processSteps.length}
+              </div>
+            ))}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={activeTab === processSteps.length - 1}
-            onClick={() => activeTab < processSteps.length - 1 && handleTabChange(activeTab + 1)}
-            motionIntensity="medium"
-          >
-            Tiếp
-          </Button>
-        </div>
-      </div>
 
-      {/* Call to action */}
-      <EnhancedScrollReveal animation="fade-up" className="mt-20">
-        <div className="max-w-3xl mx-auto text-center px-4">
-          <h3 className="text-fluid-h3 font-heading text-primary mb-4">Bắt đầu dự án của bạn</h3>
-          <p className="text-text-light mb-8">
-            Hãy liên hệ ngay để được tư vấn giải pháp phù hợp nhất cho doanh nghiệp của bạn. Đội ngũ
-            chuyên gia của chúng tôi sẽ hỗ trợ bạn trong từng bước của quy trình.
-          </p>
-          <Button
-            variant="accent"
-            size="lg"
-            icon={<span className="ml-1">→</span>}
-            iconPosition="right"
-            motionIntensity="high"
-            animateOnAppear
-            pulseEffect
-            gradientHover
-          >
-            Liên hệ ngay hôm nay
-          </Button>
+          {/* Horizontal scrollable tabs for mobile */}
+          <div ref={tabsRef} className="md:hidden mb-8 overflow-x-auto hide-scrollbar -mx-4 px-4">
+            <div className="flex space-x-3 min-w-max pb-2">
+              {processSteps.map((step, index) => (
+                <motion.button
+                  key={step.id}
+                  className={cn(
+                    "process-tab flex items-center space-x-2 py-3 px-4 rounded-lg transition-all",
+                    activeTab === index
+                      ? "bg-accent/10 text-accent font-medium shadow-sm"
+                      : "bg-primary-100/50 text-text hover:bg-primary-100",
+                  )}
+                  onClick={() => handleTabChange(index)}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <motion.span
+                    className={cn(
+                      "flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium",
+                      activeTab === index ? "bg-accent" : "bg-primary-300",
+                    )}
+                    animate={{
+                      scale: activeTab === index ? 1.1 : 1,
+                    }}
+                  >
+                    {index + 1}
+                  </motion.span>
+                  <span>{step.title}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Content area */}
+          <div className="w-full overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction} initial={false}>
+              <motion.div
+                key={activeTab}
+                custom={direction}
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="grid md:grid-cols-2 gap-8 md:gap-12 items-center"
+              >
+                {/* Left side: Text content */}
+                <motion.div
+                  className="flex flex-col h-full bg-background-light/80 backdrop-blur-sm rounded-2xl p-8 shadow-md border border-primary-100"
+                  variants={contentItemVariants}
+                >
+                  <motion.div className="mb-6">
+                    <AnimatedText
+                      tag="h3"
+                      text={processSteps[activeTab].title}
+                      className="text-fluid-h3 font-heading text-primary mb-3"
+                      animation="slide-up"
+                      highlightStyle="color"
+                    />
+                    <p className="text-text mb-6">{processSteps[activeTab].description}</p>
+                  </motion.div>
+
+                  <motion.div className="flex-grow mb-6">
+                    <h4 className="text-lg font-heading text-primary-dark mb-4 font-semibold flex items-center">
+                      <span className="w-1.5 h-6 bg-accent rounded-full mr-2"></span>
+                      Điểm chính
+                    </h4>
+                    <ul className="space-y-1">
+                      <AnimatePresence>
+                        {processSteps[activeTab].keyPoints.map((point, index) => (
+                          <HighlightedPoint
+                            key={`${activeTab}-point-${index}`}
+                            text={point}
+                            index={index}
+                            isActive={activePointIndex === index}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </ul>
+                  </motion.div>
+
+                  {processSteps[activeTab].ctaText && (
+                    <motion.div variants={contentItemVariants} className="mt-auto">
+                      <Button
+                        variant="primary"
+                        icon={<ArrowRightIcon size={18} />}
+                        iconPosition="right"
+                        motionIntensity="medium"
+                        animateOnAppear
+                        rippleEffect
+                      >
+                        {processSteps[activeTab].ctaText}
+                      </Button>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* Right side: Visual illustration */}
+                <motion.div
+                  className="bg-primary-50 rounded-2xl p-8 shadow-lg relative overflow-hidden border border-primary-100"
+                  variants={contentItemVariants}
+                >
+                  {/* Background decoration */}
+                  <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <WavePattern
+                      className="w-full h-full"
+                      animate={true}
+                      primaryColor="var(--color-primary-100)"
+                      secondaryColor="var(--color-primary-300)"
+                    />
+                  </div>
+
+                  <div className="relative flex flex-col items-center justify-center h-full min-h-64">
+                    {/* Step illustration */}
+                    <ProcessFlowIllustration
+                      step={activeTab + 1}
+                      size={260}
+                      variant="colorful"
+                      className="mb-6 transform-gpu"
+                    />
+
+                    {/* Icon with animation */}
+                    <motion.div
+                      className="mb-6 text-accent"
+                      initial={{ scale: 0, rotate: -10, opacity: 0 }}
+                      animate={{
+                        scale: 1,
+                        rotate: 0,
+                        opacity: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                          delay: 0.3,
+                        },
+                      }}
+                    >
+                      {processSteps[activeTab].icon}
+                    </motion.div>
+
+                    <motion.h3
+                      className="text-xl md:text-2xl font-heading text-primary-dark text-center mb-3"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          delay: 0.4,
+                        },
+                      }}
+                    >
+                      {processSteps[activeTab].title}
+                    </motion.h3>
+
+                    <motion.p
+                      className="text-text-light text-center"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          delay: 0.5,
+                        },
+                      }}
+                    >
+                      {processSteps[activeTab].shortDescription}
+                    </motion.p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile navigation */}
+          <div className="flex md:hidden justify-between mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={activeTab === 0}
+              onClick={() => activeTab > 0 && handleTabChange(activeTab - 1)}
+              motionIntensity="medium"
+            >
+              Trước
+            </Button>
+            <div className="flex items-center space-x-1">
+              {processSteps.map((_, index) => (
+                <motion.div
+                  key={index}
+                  className={cn(
+                    "h-2 rounded-full",
+                    activeTab === index ? "w-6 bg-accent" : "w-2 bg-primary-200",
+                  )}
+                  animate={{
+                    width: activeTab === index ? 24 : 8,
+                    backgroundColor:
+                      activeTab === index ? "var(--color-accent)" : "var(--color-primary-200)",
+                  }}
+                  transition={{ duration: 0.3 }}
+                  onClick={() => handleTabChange(index)}
+                />
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={activeTab === processSteps.length - 1}
+              onClick={() => activeTab < processSteps.length - 1 && handleTabChange(activeTab + 1)}
+              motionIntensity="medium"
+            >
+              Tiếp
+            </Button>
+          </div>
         </div>
-      </EnhancedScrollReveal>
-    </section>
+
+        {/* Call to action */}
+        <EnhancedScrollReveal animation="fade-up" className="mt-20">
+          <div className="max-w-3xl mx-auto text-center px-4 bg-gradient-to-r from-primary-50 to-accent-50 py-10 rounded-2xl shadow-lg border border-primary-100/50">
+            <h3 className="text-fluid-h3 font-heading text-primary mb-4">Bắt đầu dự án của bạn</h3>
+            <p className="text-text mb-8 max-w-xl mx-auto">
+              Hãy liên hệ ngay để được tư vấn giải pháp phù hợp nhất cho doanh nghiệp của bạn. Đội
+              ngũ chuyên gia của chúng tôi sẽ hỗ trợ bạn trong từng bước của quy trình.
+            </p>
+            <Button
+              variant="accent"
+              size="lg"
+              icon={<ArrowRightIcon size={20} />}
+              iconPosition="right"
+              motionIntensity="high"
+              animateOnAppear
+              pulseEffect
+              gradientHover
+            >
+              Liên hệ ngay hôm nay
+            </Button>
+          </div>
+        </EnhancedScrollReveal>
+      </section>
+    </MotionConfig>
   );
 }
