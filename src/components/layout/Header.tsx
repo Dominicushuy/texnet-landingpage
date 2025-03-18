@@ -315,9 +315,10 @@ export default function EnhancedHeader() {
       animate={isScrolled ? "scrolled" : "top"}
       variants={headerVariants}
       style={{
-        background: isScrolled
+        backgroundImage: isScrolled
           ? `linear-gradient(to right, rgba(43, 76, 126, ${springHeaderOpacity.get()}), rgba(58, 101, 164, ${springHeaderOpacity.get()}))`
-          : "transparent",
+          : "none",
+        backgroundColor: isScrolled ? "transparent" : "transparent",
         backdropFilter: `blur(${springHeaderBlur.get()}px)`,
         boxShadow: `0 4px 20px rgba(0, 0, 0, ${springHeaderShadowOpacity.get()})`,
       }}
