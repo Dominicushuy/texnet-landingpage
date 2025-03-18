@@ -7,7 +7,9 @@
 ### GIAI ĐOẠN 1: KHỞI TẠO DỰ ÁN & THIẾT LẬP DESIGN SYSTEM
 
 #### Task 1.1: Tạo dự án NextJS 15 với TypeScript
+
 **Prompt cho AI:**
+
 ```
 Tôi cần tạo một landing page B2B cho ngành may mặc sử dụng NextJS 15, React 19 và Tailwind CSS 4. Hãy giúp tôi:
 1. Tạo dự án mới với cấu trúc thư mục hiệu quả
@@ -20,9 +22,11 @@ Vui lòng chỉ hướng dẫn các lệnh cần chạy và file cấu hình c�
 ```
 
 #### Task 1.2: Thiết lập design system tăng cường
+
 **Prompt cho AI:**
+
 ```
-Dựa trên tài liệu thiết kế, tôi cần thiết lập một design system hiện đại và ấn tượng trong file tailwind.config.ts. Cụ thể:
+Dựa trên tài liệu thiết kế, tôi cần thiết lập một design system hiện đại và ấn tượng trong file tailwind.config.ts và src/styles/variables.css. Cụ thể:
 
 1. Cấu hình bảng màu với:
    - Màu chính: Primary (#2B4C7E - Navy Blue), Secondary (#5B8C5A - Forest Green), Accent (#FF6B35 - Vibrant Orange)
@@ -50,7 +54,9 @@ Tạo một design system vừa professional cho B2B, vừa có visual impact m�
 ```
 
 #### Task 1.3: Xây dựng UI Component Library với Micro-interactions
+
 **Prompt cho AI:**
+
 ```
 Tôi cần xây dựng một UI Component Library hiện đại với micro-interactions đặc trưng. Hãy tạo:
 
@@ -89,7 +95,9 @@ Mỗi component nên có prop "motionIntensity" để control animation strength
 ### GIAI ĐOẠN 2: PHÁT TRIỂN NAVIGATION & HERO SECTION
 
 #### Task 2.1: Tạo Interactive Header với Dynamic Navigation
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Header và Navigation system đẳng cấp cho landing page B2B ngành may mặc. Header cần vừa professional vừa ấn tượng với:
 
@@ -122,7 +130,9 @@ Tôi cần một Header và Navigation system đẳng cấp cho landing page B2B
 ```
 
 #### Task 2.2: Xây dựng Dynamic Hero Section với Parallax Effects
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Hero Section ấn tượng, đạt tiêu chuẩn thiết kế 2025 cho landing page B2B ngành may mặc. Hero section này cần:
 
@@ -162,7 +172,9 @@ Sử dụng kết hợp Framer Motion và CSS animations cho hiệu suất tối
 ### GIAI ĐOẠN 3: PHÁT TRIỂN CÁC SECTION CHÍNH VỚI VISUAL STORYTELLING
 
 #### Task.3.1: Xây dựng Benefits Section với Card Interactions
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Benefits Section ấn tượng với visual storytelling qua card interactions. Section này cần:
 
@@ -199,7 +211,9 @@ Sử dụng CSS Grid kết hợp flexbox cho layout, với GSAP hoặc Framer Mo
 ```
 
 #### Task 3.2: Xây dựng Interactive Process Flow Section
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Process Flow Section tương tác cao với visual storytelling về quy trình làm việc. Section cần:
 
@@ -237,7 +251,9 @@ Triển khai với state management rõ ràng (React useState/useReducer) và CS
 ```
 
 #### Task 3.3: Xây dựng Social Proof Section với Dynamic Content
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Social Proof Section ấn tượng thể hiện uy tín thương hiệu trong ngành may mặc B2B. Section này cần:
 
@@ -280,7 +296,9 @@ Triển khai với một carousel solution tối ưu (Embla hoặc custom hook v
 ### GIAI ĐOẠN 4: FORM ĐĂNG KÝ & LEAD CAPTURE EXPERIENCE
 
 #### Task 4.1: Thiết kế Form Component với Progressive Enhancement
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Form Component system cao cấp với progressive enhancement và micro-interactions phong phú. Form system cần:
 
@@ -324,7 +342,9 @@ Sử dụng React Hook Form với Zod validation, kết hợp Framer Motion cho 
 ```
 
 #### Task 4.2: Xây dựng Lead Capture Form với Contextual UI
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Lead Capture Form Section cao cấp với contextual UI thay đổi theo user input và progress. Form section này cần:
 
@@ -367,7 +387,9 @@ Triển khai với React Hook Form cho form management, kết hợp với contex
 ```
 
 #### Task 4.3: Xây dựng Thank You Page với Value Journey Continuation
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một Thank You Page ấn tượng, không chỉ xác nhận form submission mà còn tiếp tục value journey cho user. Page này cần:
 
@@ -412,7 +434,9 @@ Triển khai với NextJS server components kết hợp client interactivity isl
 ### GIAI ĐOẠN 5: CALL-TO-ACTION & CONVERSION ELEMENTS
 
 #### Task 5.1: Tạo Advanced CTA System với Psychology Triggers
+
 **Prompt cho AI:**
+
 ```
 Tôi cần xây dựng một hệ thống CTA nâng cao, tích hợp psychology triggers và visual design ấn tượng. Hệ thống CTA cần:
 
@@ -433,7 +457,7 @@ Tôi cần xây dựng một hệ thống CTA nâng cao, tích hợp psychology 
 
 3. Psychology triggers tích hợp:
    - Scarcity indicators với countdown animations ("Chỉ còn X ngày")
-   - Social proof tooltips xuất hiện gần CTA ("X doanh nghiệp đã đăng ký") 
+   - Social proof tooltips xuất hiện gần CTA ("X doanh nghiệp đã đăng ký")
    - FOMO-inducing micro-copy với subtle animations
    - Testimonial snippets xuất hiện theo scroll position
    - Before/after results preview (hover/tap to see difference)
@@ -456,7 +480,9 @@ Triển khai với các hooks theo dõi scroll position, viewport visibility, v�
 ```
 
 #### Task 5.2: Xây dựng Social Proof & Trust Building Elements
+
 **Prompt cho AI:**
+
 ```
 Tôi cần xây dựng một hệ thống Social Proof và Trust Building Elements ấn tượng để tăng tỷ lệ chuyển đổi. Hệ thống này cần:
 
@@ -499,7 +525,9 @@ Triển khai với combination của static và dynamic elements để đảm b�
 ```
 
 #### Task 5.3: Xây dựng FAQ Section với Interaction Design
+
 **Prompt cho AI:**
+
 ```
 Tôi cần một FAQ Section với interaction design nâng cao, không chỉ functional mà còn tạo trải nghiệm thú vị khi explore nội dung. Section này cần:
 
@@ -544,7 +572,9 @@ Triển khai với accessibility là ưu tiên hàng đầu (proper aria-expande
 ### GIAI ĐOẠN 6: RESPONSIVE DESIGN & MOTION OPTIMIZATION
 
 #### Task 6.1: Advanced Responsive Patterns
+
 **Prompt cho AI:**
+
 ```
 Tôi cần triển khai advanced responsive patterns để đảm bảo trải nghiệm nhất quán và ấn tượng trên mọi kích thước màn hình, từ mobile đến large displays. Cụ thể:
 
@@ -587,7 +617,9 @@ Implement using modern CSS (container queries, logical properties, :has selector
 ```
 
 #### Task 6.2: Performance-Optimized Motion Design
+
 **Prompt cho AI:**
+
 ```
 Tôi cần triển khai performance-optimized motion design cho landing page, đảm bảo animations mượt mà trong khi vẫn duy trì page performance metrics tốt. System này cần:
 
@@ -634,6 +666,7 @@ Triển khai với Framer Motion cho React components (sử dụng LayoutGroup v
 ### Tracking & Analytics Plan 1: Set up Core Tracking Infrastructure
 
 **Prompt cho AI:**
+
 ```
 Tôi cần thiết lập core infrastructure cho tracking và analytics trên landing page B2B ngành may mặc. Infrastructure này cần:
 
@@ -678,6 +711,7 @@ Provide implementation code examples cho NextJS app directory và recommendation
 ### Tracking & Analytics Plan 2: Customer Journey Tracking
 
 **Prompt cho AI:**
+
 ```
 Tôi cần xây dựng customer journey tracking toàn diện cho landing page B2B ngành may mặc. System này cần:
 
@@ -722,6 +756,7 @@ Implement với data layer standardization và provide example implementation v�
 ### Tracking & Analytics Plan 3: Advanced Analytics & Reporting
 
 **Prompt cho AI:**
+
 ```
 Tôi cần thiết lập advanced analytics và reporting system cho landing page B2B ngành may mặc để drive data-informed decisions. System này cần:
 
@@ -772,6 +807,7 @@ Provide example configurations, visualization recommendations, và integration p
 2. **Cung cấp tài liệu bổ sung**: Khi cung cấp tài liệu chi tiết thêm, hãy đề cập đến task cụ thể cần bổ sung thông tin.
 
 3. **Cách tối ưu prompt cho AI**:
+
    - Thêm hình ảnh tham khảo (screenshots, links) khi có thể
    - Mô tả chi tiết visual style mong muốn
    - Chia nhỏ prompt thành bullet points rõ ràng

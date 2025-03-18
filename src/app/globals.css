@@ -1,6 +1,8 @@
 @import "../styles/variables.css";
 
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   html {
