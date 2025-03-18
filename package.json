@@ -19,6 +19,7 @@
     "phosphor-react": "^1.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-intersection-observer": "9.16.0",
     "sharp": "^0.33.3",
     "tailwind-merge": "^2.2.1"
   },
