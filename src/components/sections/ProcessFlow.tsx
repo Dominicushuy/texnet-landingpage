@@ -2,14 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useAnimation,
-  useScroll,
-  useTransform,
-  MotionConfig,
-} from "framer-motion";
+import { motion, AnimatePresence, useAnimation, MotionConfig } from "framer-motion";
 import { cn } from "@/utils/cn";
 import EnhancedScrollReveal from "@/components/ui/ScrollReveal";
 import AnimatedText from "@/components/ui/AnimatedText";
@@ -125,14 +118,6 @@ export default function ProcessFlow() {
   const tabsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentControls = useAnimation();
-
-  // For scroll-based progress indicator
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"],
-  });
-
-  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   // Check if mobile view
   useEffect(() => {
@@ -331,14 +316,6 @@ export default function ProcessFlow() {
                 />
               </div>
             </EnhancedScrollReveal>
-          </div>
-
-          {/* Progress indicator */}
-          <div className="hidden md:block w-full h-1 bg-primary-100 rounded-full mb-10 overflow-hidden">
-            <motion.div
-              className="h-full bg-accent rounded-full"
-              style={{ width: progressWidth }}
-            />
           </div>
 
           {/* Steps visualization for desktop */}
