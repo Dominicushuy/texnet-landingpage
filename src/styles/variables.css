@@ -1,0 +1,48 @@
+:root {
+  /* Colors */
+  --color-primary: #2B4C7E;
+  --color-primary-light: #3A65A4;
+  --color-primary-dark: #1F3859;
+  
+  --color-secondary: #5B8C5A;
+  --color-secondary-light: #7AAD79;
+  --color-secondary-dark: #426642;
+  
+  --color-accent: #FF6B35;
+  --color-accent-light: #FF8F66;
+  --color-accent-dark: #E54E18;
+  
+  --color-text: #333333;
+  --color-text-light: #666666;
+  --color-text-lighter: #999999;
+  
+  --color-background: #F8F9FA;
+  --color-background-dark: #E9ECEF;
+  --color-background-light: #FFFFFF;
+  
+  /* Typography */
+  --font-heading: 'Inter', 'Montserrat', 'Roboto', sans-serif;
+  --font-body: 'Open Sans', 'Lato', 'Source Sans Pro', sans-serif;
+  
+  /* Spacing */
+  --spacing-2xs: 0.25rem; /* 4px */
+  --spacing-xs: 0.5rem;   /* 8px */
+  --spacing-sm: 1rem;     /* 16px */
+  --spacing-md: 1.5rem;   /* 24px */
+  --spacing-lg: 2rem;     /* 32px */
+  --spacing-xl: 3rem;     /* 48px */
+  --spacing-2xl: 4rem;    /* 64px */
+  --spacing-3xl: 6rem;    /* 96px */
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
