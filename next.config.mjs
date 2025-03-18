@@ -19,10 +19,7 @@ const nextConfig = {
   // Thêm các API platforms an toàn
   experimental: {
     webpackBuildWorker: true,
-    serverComponentsExternalPackages: ["sharp"],
   },
-  // Chỉ định trình biên dịch swc
-  swcMinify: true,
 };
 
 export default nextConfig;
