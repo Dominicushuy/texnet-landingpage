@@ -1,4 +1,6 @@
 // src/components/layout/Layout.tsx
+"use client";
+
 import React from "react";
 import DynamicHeader from "./DynamicHeader";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
@@ -13,13 +15,14 @@ export default function Layout({ children, showFooter = true }: LayoutProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header with dynamic properties based on scroll */}
+      {/* Header sẽ hiển thị trên Hero Section */}
       <DynamicHeader />
 
-      {/* Main content */}
+      {/* Main content - không thêm padding-top ở đây để Hero section full-bleed */}
       <main className="flex-grow">{children}</main>
 
-      {/* Footer */}
+      {/* Thêm Footer nếu cần */}
+      {/* {showFooter && <Footer />} */}
     </div>
   );
 }

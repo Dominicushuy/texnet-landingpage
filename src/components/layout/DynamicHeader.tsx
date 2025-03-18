@@ -1,13 +1,15 @@
 // src/components/layout/DynamicHeader.tsx
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useCycle } from "framer-motion";
-import { useRouter } from "next/router";
 import { cn } from "@/utils/cn";
 import { debounce } from "@/utils/cn";
 
 // Phosphor icons
 import { List, X, CaretDown, Globe } from "phosphor-react";
+import { usePathname } from "next/navigation";
 
 type NavItem = {
   name: string;
@@ -50,7 +52,8 @@ const logoVariants = {
 const headerVariants = {
   initial: {
     height: 96,
-    backgroundColor: "rgba(43, 76, 126, 0.95)",
+    backgroundColor: "rgba(43, 76, 126, 0)",
+    backdropFilter: "none",
   },
   scrolled: {
     height: 72,
@@ -136,9 +139,9 @@ export default function DynamicHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, toggleOpen] = useCycle(false, true);
   const [currentDropdown, setCurrentDropdown] = useState<string | null>(null);
-  const router = useRouter();
   const headerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const pathName = usePathname();
 
   // Handle scroll events to change header appearance
   useEffect(() => {
@@ -179,7 +182,7 @@ export default function DynamicHeader() {
 
   // Check if a path is active
   const isActivePath = (path: string) => {
-    return router.pathname === path || router.pathname.startsWith(`${path}/`);
+    return pathName === path || pathName.startsWith(`${path}/`);
   };
 
   // Toggle dropdown menu

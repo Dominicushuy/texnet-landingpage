@@ -13,7 +13,7 @@
   "dependencies": {
     "@headlessui/react": "^2.0.0",
     "clsx": "^2.1.0",
-    "framer-motion": "^11.0.0",
+    "framer-motion": "^11.18.2",
     "lodash-es": "^4.17.21",
     "next": "15.2.3",
     "phosphor-react": "^1.4.1",

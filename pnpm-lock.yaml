@@ -15,7 +15,7 @@ importers:
         specifier: ^2.1.0
         version: 2.1.1
       framer-motion:
-        specifier: ^11.0.0
+        specifier: ^11.18.2
         version: 11.18.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       lodash-es:
         specifier: ^4.17.21

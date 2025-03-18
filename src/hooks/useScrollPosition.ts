@@ -1,4 +1,6 @@
 // src/hooks/useScrollPosition.ts
+"use client";
+
 import { useState, useEffect } from "react";
 
 interface ScrollPosition {
