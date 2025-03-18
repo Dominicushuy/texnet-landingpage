@@ -2,6 +2,7 @@
 import Layout from "@/components/layout/Layout";
 import Benefits from "@/components/sections/Benefits";
 import InteractiveHero from "@/components/sections/InteractiveHero";
+import SocialProof from "@/components/sections/SocialProof";
 import ProcessFlow from "@/components/sections/ProcessFlow";
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
     <Layout>
       <InteractiveHero />
       <Benefits />
+      <SocialProof />
       <ProcessFlow />
     </Layout>
   );

@@ -1,4 +1,3 @@
-// src/components/layout/EnhancedHeader.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -98,18 +97,41 @@ const headerVariants = {
   },
 };
 
-const dropdownItemVariants = {
-  hidden: { opacity: 0, y: -5 },
-  visible: (i: number) => ({
+// Improved dropdown animations
+const dropdownVariants = {
+  hidden: {
+    opacity: 0,
+    y: -5,
+    scale: 0.98,
+    transition: { duration: 0.15, ease: "easeOut" },
+  },
+  visible: {
     opacity: 1,
     y: 0,
+    scale: 1,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    y: -5,
+    scale: 0.98,
+    transition: { duration: 0.15, ease: "easeIn" },
+  },
+};
+
+// Improved dropdownItem animations
+const dropdownItemVariants = {
+  hidden: { opacity: 0, x: -5 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
     transition: {
-      delay: i * 0.05,
-      duration: 0.2,
-      ease: [0.16, 1, 0.3, 1],
+      delay: i * 0.03, // Reduced delay between items
+      duration: 0.15,
+      ease: "easeOut",
     },
   }),
-  exit: { opacity: 0, y: -5, transition: { duration: 0.1 } },
+  exit: { opacity: 0, x: -5, transition: { duration: 0.1 } },
 };
 
 const mobileMenuVariants = {
@@ -155,13 +177,16 @@ export default function EnhancedHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [currentDropdown, setCurrentDropdown] = useState<string | null>(null);
+  const [dropdownIntent, setDropdownIntent] = useState<string | null>(null);
   const [searchActive, setSearchActive] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intentDelayRef = useRef<NodeJS.Timeout | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [scope, animate] = useAnimate();
   const pathName = usePathname();
+  const intentDistance = 50; // Distance for intent prediction
 
   // Scroll-based animations
   const { scrollY } = useScroll();
@@ -209,6 +234,7 @@ export default function EnhancedHeader() {
       // Close dropdown if clicking outside
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setCurrentDropdown(null);
+        setDropdownIntent(null);
       }
 
       // Close mobile menu if clicking outside
@@ -249,15 +275,17 @@ export default function EnhancedHeader() {
     }
   }, [isOpen, animate, scope]);
 
-  // Handle dropdown hover
+  // Enhanced dropdown hover handling with intent prediction
   const handleDropdownHover = (name: string) => {
     if (dropdownTimeoutRef.current) {
       clearTimeout(dropdownTimeoutRef.current);
     }
+
     setCurrentDropdown(name);
+    setDropdownIntent(name);
   };
 
-  // Handle dropdown hover leave
+  // Handle dropdown hover leave with improved timeout handling
   const handleDropdownLeave = () => {
     if (dropdownTimeoutRef.current) {
       clearTimeout(dropdownTimeoutRef.current);
@@ -265,7 +293,48 @@ export default function EnhancedHeader() {
 
     dropdownTimeoutRef.current = setTimeout(() => {
       setCurrentDropdown(null);
-    }, 300);
+      setDropdownIntent(null);
+    }, 150);
+  };
+
+  // Handle mouse movement for intent prediction
+  const handleMouseMove = (event: React.MouseEvent, name: string) => {
+    if (dropdownIntent !== name) return;
+
+    // Calculate distance from mouse to dropdown
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+
+    // Check if mouse is moving away from dropdown
+    if (
+      mouseX < rect.left - intentDistance ||
+      mouseX > rect.right + intentDistance ||
+      mouseY < rect.top - intentDistance ||
+      mouseY > rect.bottom + intentDistance
+    ) {
+      setDropdownIntent(null);
+    }
+  };
+
+  // Handle dropdown content hover to prevent closing
+  const handleDropdownContentHover = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+  };
+
+  // Handle dropdown content leave
+  const handleDropdownContentLeave = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setCurrentDropdown(null);
+      setDropdownIntent(null);
+    }, 150);
   };
 
   // Handle mobile menu toggle
@@ -350,19 +419,32 @@ export default function EnhancedHeader() {
               onMouseEnter={() => item.dropdown && handleDropdownHover(item.name)}
               onMouseLeave={handleDropdownLeave}
             >
+              {/* Hover buffer zone to improve UX */}
+              {currentDropdown === item.name && (
+                <div
+                  className="absolute -top-2 left-0 w-full h-3 z-10"
+                  style={{ pointerEvents: "none" }}
+                />
+              )}
+
               {/* Nav Item */}
               <div className="relative px-3 py-2 rounded-md cursor-pointer">
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center transition-colors",
+                    "flex items-center transition-colors duration-200",
                     isActivePath(item.href)
                       ? "text-background-light font-medium"
                       : "text-background-light/80 hover:text-background-light",
                   )}
                   onClick={(e) => item.dropdown && e.preventDefault()}
                 >
-                  <span className="relative">
+                  <motion.span
+                    className="relative"
+                    whileHover={{ y: -1 }}
+                    whileTap={{ y: 1 }}
+                    transition={{ duration: 0.1 }}
+                  >
                     {item.name}
                     {/* Underline animation */}
                     <span
@@ -387,15 +469,21 @@ export default function EnhancedHeader() {
                         }}
                       />
                     )}
-                  </span>
+                  </motion.span>
 
-                  {/* Dropdown indicator */}
+                  {/* Dropdown indicator with improved animation */}
                   {item.dropdown && (
                     <motion.div
                       animate={{
                         rotate: currentDropdown === item.name ? 180 : 0,
+                        y: currentDropdown === item.name ? 1 : 0,
                       }}
-                      transition={{ duration: 0.2 }}
+                      transition={{
+                        duration: 0.2,
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      }}
                     >
                       <CaretDown weight="bold" size={16} className="ml-1" />
                     </motion.div>
@@ -403,53 +491,76 @@ export default function EnhancedHeader() {
                 </Link>
               </div>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu with improved animation and connector */}
               {item.dropdown && (
                 <AnimatePresence>
                   {currentDropdown === item.name && (
-                    <motion.div
-                      className="absolute left-0 mt-1 py-3 w-64 bg-gradient-to-br from-background-light to-background-dark rounded-md shadow-xl border border-primary/5 z-20 backdrop-blur-sm"
-                      initial={{ opacity: 0, y: 10, rotateX: -10 }}
-                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                      exit={{ opacity: 0, y: 5, rotateX: -5 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      style={{ transformOrigin: "top center" }}
-                    >
-                      <div className="px-2">
-                        {item.dropdown.map((dropdownItem, index) => (
-                          <motion.div
-                            key={dropdownItem.name}
-                            custom={index}
-                            variants={dropdownItemVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            whileHover={{
-                              backgroundColor: "rgba(43, 76, 126, 0.05)",
-                              x: 3,
-                            }}
-                            className="rounded-md overflow-hidden"
-                          >
-                            <Link
-                              href={dropdownItem.href}
-                              className="flex items-start gap-3 px-3 py-2 text-text hover:text-primary transition-colors"
+                    <>
+                      {/* Connector zone between nav item and dropdown */}
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 h-3 w-8 z-20"
+                        style={{ top: "100%" }}
+                      />
+
+                      <motion.div
+                        className="absolute left-0 mt-1 py-3 w-64 rounded-md z-20 dropdown-content"
+                        variants={dropdownVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        onMouseEnter={handleDropdownContentHover}
+                        onMouseLeave={handleDropdownContentLeave}
+                        style={{
+                          transformOrigin: "top center",
+                          pointerEvents: "auto",
+                          background: "rgba(255, 255, 255, 0.95)",
+                          backdropFilter: "blur(12px)",
+                          boxShadow:
+                            "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)",
+                          border: "1px solid rgba(229, 231, 235, 0.5)",
+                        }}
+                      >
+                        {/* Triangle indicator */}
+                        <div className="absolute -top-2 left-6 w-4 h-4 bg-white rotate-45 border-t border-l border-primary/5" />
+
+                        {/* Dropdown content */}
+                        <div className="relative z-10 px-2">
+                          {item.dropdown.map((dropdownItem, index) => (
+                            <motion.div
+                              key={dropdownItem.name}
+                              custom={index}
+                              variants={dropdownItemVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              whileHover={{
+                                backgroundColor: "rgba(43, 76, 126, 0.05)",
+                                x: 3,
+                                transition: { duration: 0.15 },
+                              }}
+                              className="rounded-md overflow-hidden"
                             >
-                              {dropdownItem.icon && (
-                                <div className="text-primary mt-0.5">{dropdownItem.icon}</div>
-                              )}
-                              <div>
-                                <div className="font-medium">{dropdownItem.name}</div>
-                                {dropdownItem.description && (
-                                  <div className="text-xs mt-0.5 text-text-light">
-                                    {dropdownItem.description}
-                                  </div>
+                              <Link
+                                href={dropdownItem.href}
+                                className="flex items-start gap-3 px-3 py-2 text-text hover:text-primary transition-all duration-150"
+                              >
+                                {dropdownItem.icon && (
+                                  <div className="text-primary mt-0.5">{dropdownItem.icon}</div>
                                 )}
-                              </div>
-                            </Link>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
+                                <div>
+                                  <div className="font-medium">{dropdownItem.name}</div>
+                                  {dropdownItem.description && (
+                                    <div className="text-xs mt-0.5 text-text-light">
+                                      {dropdownItem.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </>
                   )}
                 </AnimatePresence>
               )}
@@ -656,8 +767,16 @@ export default function EnhancedHeader() {
                                   />
                                 )}
                                 <motion.div
-                                  animate={{ rotate: currentDropdown === item.name ? 180 : 0 }}
-                                  transition={{ duration: 0.2 }}
+                                  animate={{
+                                    rotate: currentDropdown === item.name ? 180 : 0,
+                                    y: currentDropdown === item.name ? 1 : 0,
+                                  }}
+                                  transition={{
+                                    duration: 0.2,
+                                    type: "spring",
+                                    stiffness: 300,
+                                    damping: 20,
+                                  }}
                                 >
                                   <CaretDown weight="bold" size={16} />
                                 </motion.div>
