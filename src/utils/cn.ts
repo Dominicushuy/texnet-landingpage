@@ -1,9 +1,11 @@
 // src/lib/utils.ts
-import { ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
- * Kết hợp các class Tailwind một cách thông minh, tránh xung đột
+ * Combines and merges class names using clsx and tailwind-merge
+ * @param inputs - Class values to combine
+ * @returns Merged class string
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,8 +30,8 @@ export function debounce<T extends (...args: any[]) => any>(
  * Format currency cho giá sản phẩm
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
   }).format(amount);
 }
