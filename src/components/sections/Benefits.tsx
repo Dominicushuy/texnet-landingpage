@@ -1,4 +1,4 @@
-// src/components/sections/BenefitsSection.tsx
+// src/components/sections/Benefits.tsx
 "use client";
 
 import React, { useRef } from "react";
@@ -6,8 +6,10 @@ import { motion, useInView, useScroll, useSpring, useTransform } from "framer-mo
 import Card from "@/components/ui/Card";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { cn } from "@/utils/cn";
-import { ArrowRightIcon } from "@/components/icons/BasicIcons";
+import { ArrowRightIcon, GearIcon, FactoryIcon } from "@/components/icons/BasicIcons";
+import CssAnimatedIcons from "@/components/icons/CssAnimatedIcons";
 
+// Định nghĩa interfaces với TypeScript
 interface Benefit {
   id: string;
   icon: React.ReactNode;
@@ -18,17 +20,17 @@ interface Benefit {
   accentColor?: string;
 }
 
-interface BenefitsSectionProps {
-  title: string;
+interface BenefitsProps {
+  title?: string;
   subtitle?: string;
-  benefits: Benefit[];
+  benefits?: Benefit[];
   className?: string;
   showConnectors?: boolean;
   motionIntensity?: "none" | "subtle" | "medium" | "high";
 }
 
 // SVG Connector Component
-const Connector = ({ active, index }: { active: boolean; index: number }) => {
+const Connector: React.FC<{ active: boolean; index: number }> = ({ active, index }) => {
   const springConfig = { stiffness: 100, damping: 20, restDelta: 0.001 };
   const spring = useSpring(0, springConfig);
 
@@ -42,13 +44,9 @@ const Connector = ({ active, index }: { active: boolean; index: number }) => {
   const opacity = useTransform(spring, [0, 1], [0.2, 0.6]);
 
   // Different connector patterns based on index
-  const getPath = () => {
+  const getPath = (): string => {
     const isEven = index % 2 === 0;
-    if (isEven) {
-      return "M 0,10 C 50,10 50,90 100,90";
-    } else {
-      return "M 0,90 C 50,90 50,10 100,10";
-    }
+    return isEven ? "M 0,10 C 50,10 50,90 100,90" : "M 0,90 C 50,90 50,10 100,10";
   };
 
   return (
@@ -92,13 +90,10 @@ const Connector = ({ active, index }: { active: boolean; index: number }) => {
 };
 
 // Custom Card Icon with Animation
-const AnimatedIcon = ({
-  children,
-  accentColor = "var(--color-accent)",
-}: {
+const AnimatedIcon: React.FC<{
   children: React.ReactNode;
   accentColor?: string;
-}) => {
+}> = ({ children, accentColor = "var(--color-accent)" }) => {
   return (
     <motion.div
       className="p-3 rounded-lg bg-background-light/70 backdrop-blur-sm border border-primary/10 relative mb-6 w-fit"
@@ -130,14 +125,103 @@ const AnimatedIcon = ({
   );
 };
 
-export default function BenefitsSection({
-  title,
-  subtitle,
-  benefits,
-  className = "",
+// Dữ liệu mặc định từ HomeBenefits
+const defaultBenefits: Benefit[] = [
+  {
+    id: "efficiency",
+    icon: <GearIcon size={32} />,
+    title: "Tối ưu hóa hiệu suất",
+    description:
+      "Giảm thiểu thời gian chết, tăng năng suất và giảm chi phí vận hành thông qua các quy trình tự động hóa và được tối ưu hóa.",
+    linkText: "Tìm hiểu giải pháp",
+    linkHref: "/services/optimization",
+    accentColor: "var(--color-primary)",
+  },
+  {
+    id: "quality",
+    icon: (
+      <CssAnimatedIcons.WashingMachine
+        size={32}
+        color="currentColor"
+        secondaryColor="var(--color-accent)"
+      />
+    ),
+    title: "Công nghệ giặt tiên tiến",
+    description:
+      "Đảm bảo chất lượng sản phẩm nhất quán thông qua kiểm soát quy trình nghiêm ngặt và thiết bị hiện đại.",
+    linkText: "Xem công nghệ của chúng tôi",
+    linkHref: "/services/quality-control",
+    accentColor: "var(--color-accent)",
+  },
+  {
+    id: "analytics",
+    icon: (
+      <CssAnimatedIcons.DataAnalytics
+        size={32}
+        color="currentColor"
+        secondaryColor="var(--color-secondary)"
+      />
+    ),
+    title: "Phân tích dữ liệu thông minh",
+    description:
+      "Thu thập và phân tích dữ liệu từ quy trình sản xuất để tối ưu hóa liên tục và dự đoán nhu cầu trong tương lai.",
+    linkText: "Khám phá analytics",
+    linkHref: "/services/analytics",
+    accentColor: "var(--color-secondary)",
+  },
+  {
+    id: "manufacturing",
+    icon: (
+      <CssAnimatedIcons.SewingMachine
+        size={32}
+        color="currentColor"
+        secondaryColor="var(--color-accent)"
+      />
+    ),
+    title: "May mặc công nghiệp",
+    description:
+      "Dây chuyền sản xuất may mặc hiện đại với công nghệ tự động hóa giúp tăng năng suất và độ chính xác.",
+    linkText: "Giải pháp may mặc",
+    linkHref: "/services/manufacturing",
+    accentColor: "var(--color-accent)",
+  },
+  {
+    id: "sustainability",
+    icon: (
+      <CssAnimatedIcons.Sustainability
+        size={32}
+        color="currentColor"
+        secondaryColor="var(--color-secondary)"
+      />
+    ),
+    title: "Giải pháp bền vững",
+    description:
+      "Giảm tác động môi trường thông qua các quy trình tối ưu hóa hiệu quả năng lượng và quản lý chất thải.",
+    linkText: "Cam kết xanh của chúng tôi",
+    linkHref: "/about/sustainability",
+    accentColor: "var(--color-secondary)",
+  },
+  {
+    id: "scale",
+    icon: <FactoryIcon size={32} />,
+    title: "Khả năng mở rộng",
+    description:
+      "Giải pháp linh hoạt phù hợp với mọi quy mô doanh nghiệp, dễ dàng mở rộng theo nhu cầu tăng trưởng của bạn.",
+    linkText: "Quy mô giải pháp",
+    linkHref: "/services/scalability",
+    accentColor: "var(--color-primary)",
+  },
+];
+
+// Component chính kết hợp
+const Benefits: React.FC<BenefitsProps> = ({
+  title = "Tại sao doanh nghiệp tin chọn TextileTech?",
+  subtitle = "Chúng tôi cung cấp giải pháp toàn diện giúp doanh nghiệp của bạn tối ưu hoá quy trình, nâng cao chất lượng và tăng lợi nhuận.",
+  benefits = defaultBenefits,
+  className = "bg-background-light",
   showConnectors = true,
   motionIntensity = "medium",
-}: BenefitsSectionProps) {
+}) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: false, amount: 0.2 });
@@ -273,4 +357,6 @@ export default function BenefitsSection({
       </div>
     </section>
   );
-}
+};
+
+export default Benefits;

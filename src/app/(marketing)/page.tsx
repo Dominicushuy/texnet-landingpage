@@ -1,13 +1,15 @@
 // src/app/(marketing)/page.tsx
 import Layout from "@/components/layout/Layout";
-import HomeBenefits from "@/components/sections/BenefitsSectionExample";
+import Benefits from "@/components/sections/Benefits";
 import InteractiveHero from "@/components/sections/InteractiveHero";
+import ProcessFlow from "@/components/sections/ProcessFlow";
 
 export default function Home() {
   return (
     <Layout>
       <InteractiveHero />
-      <HomeBenefits />
+      <Benefits />
+      <ProcessFlow />
     </Layout>
   );
 }
