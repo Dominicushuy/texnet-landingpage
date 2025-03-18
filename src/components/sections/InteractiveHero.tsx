@@ -1,10 +1,81 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import { useScroll, useTransform, useSpring, useMotionValue, useInView } from "framer-motion";
 import Image from "next/image";
 import { ArrowDown, ArrowCircleRight } from "phosphor-react";
 import { LazyMotion, domAnimation, m } from "framer-motion";
+
+// Tách component Particles riêng để tối ưu render
+const Particles = React.memo(({ count = 8 }) => {
+  // useMemo để tránh tính toán lại khi re-render
+  const particles = useMemo(
+    () =>
+      Array.from({ length: count }).map((_, i) => ({
+        id: i,
+        size: Math.random() * 3 + 1, // Giảm kích thước
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        duration: Math.random() * 10 + 10,
+        delay: Math.random() * 2,
+      })),
+    [count],
+  );
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-1 overflow-hidden">
+      {particles.map((particle) => (
+        <m.div
+          key={particle.id}
+          className="absolute rounded-full bg-primary-light opacity-20"
+          style={{
+            width: particle.size,
+            height: particle.size,
+            top: `${particle.y}%`,
+            left: `${particle.x}%`,
+            willChange: "transform, opacity",
+            translateZ: 0, // Hardware acceleration
+          }}
+          animate={{
+            y: [0, -15, 0],
+            opacity: [0.1, 0.2, 0.1],
+          }}
+          transition={{
+            duration: particle.duration,
+            repeat: Infinity,
+            delay: particle.delay,
+            ease: "linear",
+          }}
+        />
+      ))}
+    </div>
+  );
+});
+
+// Tách HeadlineText thành component riêng
+const HeadlineText = React.memo(({ text, variants, wordVariants, isHighlighted = false }) => {
+  const words = text.split(" ");
+
+  return words.map((word, i) => (
+    <m.span
+      key={i}
+      variants={wordVariants}
+      className={`inline-block mr-3 ${
+        isHighlighted && i === words.length - 1 ? "text-accent relative" : ""
+      }`}
+    >
+      {word}
+      {isHighlighted && i === words.length - 1 && (
+        <m.span
+          className="absolute -bottom-1 left-0 w-full h-1 bg-accent rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ delay: 1.2, duration: 0.4 }}
+        />
+      )}
+    </m.span>
+  ));
+});
 
 const InteractiveHero = () => {
   // Refs và tracking
@@ -14,14 +85,12 @@ const InteractiveHero = () => {
   const isTextInView = useInView(textRef, { once: true, amount: 0.3 });
   const isCTAInView = useInView(ctaRef, { once: true, amount: 0.5 });
 
-  // Mouse tracking tối ưu với throttling
+  // Mouse tracking tối ưu với debounce mạnh hơn
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-
-  // Giảm số lượng particle
-  const [particles, setParticles] = useState([]);
+  const lastMoveTime = useRef(0);
 
   // Scroll effects với tối ưu
   const { scrollYProgress } = useScroll({
@@ -29,72 +98,57 @@ const InteractiveHero = () => {
     offset: ["start start", "end start"],
   });
 
-  // Giảm số lượng transform và sử dụng giá trị đơn giản hơn
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
-  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  // Tối ưu transform với ít giá trị hơn
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
 
-  // Chỉ dùng 1 spring animation cho hiệu ứng mượt nhất
+  // Chỉ sử dụng một spring hiệu quả
   const smoothScrollEffect = useSpring(scrollYProgress, {
-    damping: 30,
-    stiffness: 90,
+    damping: 25,
+    stiffness: 80,
     mass: 0.5,
   });
 
-  const smoothTextY = useTransform(smoothScrollEffect, [0, 1], ["0%", "30%"]);
+  const smoothTextY = useTransform(smoothScrollEffect, [0, 1], ["0%", "25%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
-  // Giảm số lượng particles và tối ưu hóa
-  useEffect(() => {
-    // Chỉ tạo particles khi component đã load xong
-    if (isLoaded) {
-      const particleCount = 8; // Giảm số lượng particles
-      const generatedParticles = Array.from({ length: particleCount }).map((_, i) => ({
-        id: i,
-        size: Math.random() * 4 + 2, // Giảm kích thước
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        duration: Math.random() * 15 + 10,
-        delay: Math.random() * 3,
-      }));
-
-      setParticles(generatedParticles);
-    }
-  }, [isLoaded]);
-
-  // Đánh dấu component đã load
+  // Đánh dấu component đã load với useEffect sẽ chỉ chạy một lần
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
 
-  // Scroll indicator với debouncing
-  useEffect(() => {
-    let timeoutId;
-    const handleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        if (window.scrollY > 30) {
-          setHasScrolled(true);
-        }
-      }, 100);
-    };
-
-    window.addEventListener("scroll", handleScroll);
+    // Cleanup function khi unmount
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
+      // Cleanup any resources
     };
   }, []);
 
-  // Handle mouse move với throttling để tránh quá nhiều tính toán
-  const handleMouseMove = (e) => {
-    if (!lastMoveTime.current || Date.now() - lastMoveTime.current > 50) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      mouseX.set((e.clientX - (rect.left + rect.width / 2)) / 25);
-      mouseY.set((e.clientY - (rect.top + rect.height / 2)) / 25);
-      lastMoveTime.current = Date.now();
-    }
-  };
-  const lastMoveTime = useRef(0);
+  // Scroll indicator với debouncing tối ưu
+  useEffect(() => {
+    const handler = () => {
+      if (window.scrollY > 30) {
+        setHasScrolled(true);
+      }
+    };
+
+    // Sử dụng passive listener để tối ưu performance
+    window.addEventListener("scroll", handler, { passive: true });
+
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  // Handle mouse move với debounce mạnh hơn
+  const handleMouseMove = useCallback(
+    (e) => {
+      // Tăng thời gian debounce lên 100ms
+      if (!lastMoveTime.current || Date.now() - lastMoveTime.current > 100) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        // Giảm độ nhạy để giảm tính toán
+        mouseX.set((e.clientX - (rect.left + rect.width / 2)) / 40);
+        mouseY.set((e.clientY - (rect.top + rect.height / 2)) / 40);
+        lastMoveTime.current = Date.now();
+      }
+    },
+    [mouseX, mouseY],
+  );
 
   // Đơn giản hóa animations
   const headlineVariants = {
@@ -103,18 +157,18 @@ const InteractiveHero = () => {
       opacity: 1,
       transition: {
         delayChildren: 0.2,
-        staggerChildren: 0.06, // Nhanh hơn
+        staggerChildren: 0.05, // Nhanh hơn
       },
     },
   };
 
   const wordVariants = {
-    hidden: { y: 15, opacity: 0 },
+    hidden: { y: 10, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        duration: 0.5, // Nhanh hơn
+        duration: 0.4, // Nhanh hơn
         ease: [0.2, 0.9, 0.3, 1],
       },
     },
@@ -123,8 +177,6 @@ const InteractiveHero = () => {
   // Content
   const headlineText = "Giải pháp May mặc & Giặt là";
   const subHeadlineText = "Công nghiệp Thông minh";
-  const headlineWords = headlineText.split(" ");
-  const subHeadlineWords = subHeadlineText.split(" ");
 
   // Hình ảnh đại diện người dùng
   const userAvatars = [
@@ -144,31 +196,38 @@ const InteractiveHero = () => {
         transition={{ duration: 0.6 }}
         onMouseMove={handleMouseMove}
       >
-        {/* Nền tĩnh để tránh repaint */}
+        {/* Nền tĩnh */}
         <div className="absolute inset-0 bg-primary-700/30 z-0" />
 
         {/* Background Pattern đơn giản hóa */}
         {isLoaded && (
-          <m.div className="absolute inset-0 z-0" style={{ opacity: 0.08 }}>
-            <m.div
-              className="absolute inset-0 opacity-30"
-              style={{
-                backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')",
-                backgroundSize: "30px",
-                y: backgroundY,
-              }}
-            />
-          </m.div>
+          <m.div
+            className="absolute inset-0 z-0 opacity-8"
+            style={{
+              backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')",
+              backgroundSize: "30px",
+              willChange: "transform",
+              y: backgroundY,
+              translateZ: 0, // Kích hoạt GPU acceleration
+            }}
+          />
         )}
 
         {/* Background Gradient */}
         <m.div
           className="absolute inset-0 z-0 bg-gradient-to-r from-primary/70 via-primary/40 to-transparent"
-          style={{ opacity }}
+          style={{ opacity, willChange: "opacity" }}
         />
 
         {/* Background Image - Sử dụng CSS Transform */}
-        <m.div className="absolute inset-0 z-0 will-change-transform" style={{ y: backgroundY }}>
+        <m.div
+          className="absolute inset-0 z-0"
+          style={{
+            y: backgroundY,
+            willChange: "transform",
+            translateZ: 0, // Hardware acceleration
+          }}
+        >
           <div className="absolute inset-0 h-full w-full">
             <Image
               src="https://images.unsplash.com/photo-1581263518256-ba4a28ed5517?q=80&w=1920&auto=format&fit=crop"
@@ -183,44 +242,28 @@ const InteractiveHero = () => {
           </div>
         </m.div>
 
-        {/* Particles với hiệu ứng nhẹ hơn */}
-        {isLoaded && (
-          <div className="absolute inset-0 pointer-events-none z-1 overflow-hidden">
-            {particles.map((particle) => (
-              <m.div
-                key={particle.id}
-                className="absolute rounded-full bg-primary-light opacity-20"
-                style={{
-                  width: particle.size,
-                  height: particle.size,
-                  top: `${particle.y}%`,
-                  left: `${particle.x}%`,
-                  willChange: "transform, opacity",
-                }}
-                animate={{
-                  y: [0, -20, 0],
-                  opacity: [0.1, 0.2, 0.1],
-                }}
-                transition={{
-                  duration: particle.duration,
-                  repeat: Infinity,
-                  delay: particle.delay,
-                  ease: "linear",
-                }}
-              />
-            ))}
-          </div>
-        )}
+        {/* Particles tách riêng */}
+        {isLoaded && <Particles count={6} />}
 
         {/* Content Container */}
         <div className="container mx-auto px-4 pt-20 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
-            <m.div ref={textRef} className="relative z-10" style={{ opacity, y: smoothTextY }}>
+            <m.div
+              ref={textRef}
+              className="relative z-10"
+              style={{
+                opacity,
+                y: smoothTextY,
+                willChange: "transform, opacity",
+                translateZ: 0, // Hardware acceleration
+              }}
+            >
               <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
+                style={{ willChange: "transform, opacity" }}
               >
                 <div className="inline-block px-3 py-1 mb-4 bg-accent/90 backdrop-blur-sm rounded-full text-background-light text-sm font-medium border border-accent/30 shadow-lg shadow-accent/20">
                   Giải pháp B2B hàng đầu Việt Nam
@@ -233,29 +276,18 @@ const InteractiveHero = () => {
                 initial="hidden"
                 animate={isTextInView ? "visible" : "hidden"}
               >
-                {headlineWords.map((word, i) => (
-                  <m.span key={i} variants={wordVariants} className="inline-block mr-3">
-                    {word}
-                  </m.span>
-                ))}
+                <HeadlineText
+                  text={headlineText}
+                  variants={headlineVariants}
+                  wordVariants={wordVariants}
+                />
                 <br className="hidden md:block" />
-                {subHeadlineWords.map((word, i) => (
-                  <m.span
-                    key={i}
-                    variants={wordVariants}
-                    className={`inline-block mr-3 ${i === 2 ? "text-accent relative" : ""}`}
-                  >
-                    {word}
-                    {i === 2 && (
-                      <m.span
-                        className="absolute -bottom-1 left-0 w-full h-1 bg-accent rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: "100%" }}
-                        transition={{ delay: 1.2, duration: 0.4 }}
-                      />
-                    )}
-                  </m.span>
-                ))}
+                <HeadlineText
+                  text={subHeadlineText}
+                  variants={headlineVariants}
+                  wordVariants={wordVariants}
+                  isHighlighted={true}
+                />
               </m.h1>
 
               <m.p
@@ -263,6 +295,7 @@ const InteractiveHero = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={isTextInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
+                style={{ willChange: "transform, opacity" }}
               >
                 Chúng tôi cung cấp các giải pháp toàn diện cho ngành may mặc và giặt là công nghiệp,
                 giúp doanh nghiệp của bạn tối ưu hóa quy trình sản xuất và nâng cao chất lượng sản
@@ -286,26 +319,18 @@ const InteractiveHero = () => {
                 initial="hidden"
                 animate={isCTAInView ? "visible" : "hidden"}
                 className="flex flex-col sm:flex-row gap-4"
+                style={{ willChange: "transform, opacity" }}
               >
                 <m.a
                   href="/contact"
                   className="relative inline-flex items-center justify-center px-6 py-3 rounded-md bg-accent hover:bg-accent-dark text-background-light font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 shadow-lg shadow-accent/20 overflow-hidden group"
                   whileHover={{
-                    scale: 1.03,
-                    boxShadow:
-                      "0 10px 25px -5px rgba(255, 107, 53, 0.4), 0 8px 10px -6px rgba(255, 107, 53, 0.2)",
+                    scale: 1.02, // Giảm độ nhảy
                   }}
                   whileTap={{ scale: 0.98 }}
+                  style={{ willChange: "transform" }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-accent-light to-accent-dark opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
-                  <m.span
-                    className="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.2)_0%,_transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                    style={{
-                      x: mouseX,
-                      y: mouseY,
-                      willChange: "transform",
-                    }}
-                  />
                   <span className="relative z-20 flex items-center">
                     <span>Đăng ký tư vấn</span>
                     <ArrowCircleRight weight="bold" className="ml-2" size={20} />
@@ -315,8 +340,9 @@ const InteractiveHero = () => {
                 <m.a
                   href="/services"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-md backdrop-blur-sm bg-background-light/10 hover:bg-background-light/20 text-background-light font-medium border border-background-light/30 transition-colors focus:outline-none focus:ring-2 focus:ring-background-light focus:ring-offset-1"
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  style={{ willChange: "transform" }}
                 >
                   Khám phá dịch vụ
                 </m.a>
@@ -337,6 +363,7 @@ const InteractiveHero = () => {
                 initial="hidden"
                 animate={isCTAInView ? "visible" : "hidden"}
                 className="mt-12 flex items-center"
+                style={{ willChange: "opacity" }}
               >
                 <div className="flex space-x-4 items-center">
                   <div className="flex -space-x-2">
@@ -346,7 +373,8 @@ const InteractiveHero = () => {
                         className="w-10 h-10 rounded-full border-2 border-background-light overflow-hidden bg-primary-300 relative"
                         initial={{ opacity: 0, x: -5 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 1.2 + i * 0.08 }}
+                        transition={{ delay: 1.2 + i * 0.1 }}
+                        style={{ willChange: "transform, opacity" }}
                       >
                         <Image
                           src={avatar}
@@ -363,6 +391,7 @@ const InteractiveHero = () => {
                     initial={{ opacity: 0, x: -5 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 1.5 }}
+                    style={{ willChange: "transform, opacity" }}
                   >
                     <div className="font-medium">500+ Khách hàng</div>
                     <div className="text-sm text-background-light/80">Đang tin dùng dịch vụ</div>
@@ -374,7 +403,11 @@ const InteractiveHero = () => {
             {/* Featured Element / Illustration - Tối ưu hóa */}
             <m.div
               className="hidden lg:block relative h-[500px] rounded-2xl overflow-hidden z-20"
-              style={{ y: backgroundY }}
+              style={{
+                y: backgroundY,
+                willChange: "transform",
+                translateZ: 0, // Hardware acceleration
+              }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.3 }}
@@ -400,6 +433,7 @@ const InteractiveHero = () => {
                           initial={{ opacity: 0, y: -5 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.8 }}
+                          style={{ willChange: "transform, opacity" }}
                         >
                           Công nghệ mới 2025
                         </m.div>
@@ -409,41 +443,28 @@ const InteractiveHero = () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 1.0 }}
+                          style={{ willChange: "transform, opacity" }}
                         >
-                          <m.h3
-                            className="text-background-light font-medium mb-1"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.1 }}
-                          >
+                          <h3 className="text-background-light font-medium mb-1">
                             Hệ thống giặt tự động
-                          </m.h3>
-                          <m.p
-                            className="text-background-light/80 text-sm"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.2 }}
-                          >
+                          </h3>
+                          <p className="text-background-light/80 text-sm">
                             Tiết kiệm 30% chi phí vận hành
-                          </m.p>
+                          </p>
                         </m.div>
                       </>
                     )}
                   </div>
 
                   {/* Giảm số lượng hiệu ứng trang trí */}
-                  <m.div
-                    className="absolute top-[20%] right-[10%] w-20 h-20 bg-accent/20 rounded-full blur-2xl"
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  />
+                  <div className="absolute top-[20%] right-[10%] w-20 h-20 bg-accent/20 rounded-full blur-2xl opacity-40" />
                 </div>
               </div>
             </m.div>
           </div>
         </div>
 
-        {/* Scroll Down Indicator - đơn giản và hiệu quả hơn */}
+        {/* Scroll Down Indicator - đơn giản hơn */}
         {!hasScrolled && (
           <m.div
             className="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-background-light flex flex-col items-center z-20"
@@ -451,19 +472,8 @@ const InteractiveHero = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
-            <m.span
-              className="text-sm mb-2 opacity-80"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatType: "loop" }}
-            >
-              Cuộn xuống
-            </m.span>
-            <m.div
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatType: "loop" }}
-            >
-              <ArrowDown size={24} weight="bold" />
-            </m.div>
+            <span className="text-sm mb-2 opacity-80">Cuộn xuống</span>
+            <ArrowDown size={24} weight="bold" />
           </m.div>
         )}
       </m.div>
@@ -471,4 +481,4 @@ const InteractiveHero = () => {
   );
 };
 
-export default InteractiveHero;
+export default React.memo(InteractiveHero);
