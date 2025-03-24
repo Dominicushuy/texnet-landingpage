@@ -1,0 +1,76 @@
+﻿PHÂN TÍCH & CHUẨN HÓA HỒ SƠ KHÁCH HÀNG MỤC TIÊU (ICP) & DANH SÁCH TIÊU CHÍ ĐÁNH GIÁ KHÁCH HÀNG TIỀM NĂNG
+(Dành cho nền tảng B2B ngành May mặc, Giặt, Wash)
+________________
+
+
+1️⃣ Hồ Sơ Khách Hàng Mục Tiêu (ICP - Ideal Customer Profile)
+📌 Mục tiêu:
+✅ Xác định rõ đối tượng khách hàng tiềm năng để tối ưu quảng cáo & chiến lược tiếp cận.
+✅ Giúp bộ phận Marketing tạo nội dung & chiến dịch nhắm đúng khách hàng.
+✅ Hỗ trợ Sales tập trung vào khách hàng có tỷ lệ chuyển đổi cao nhất.
+📢 Khách hàng lý tưởng của nền tảng gồm 3 nhóm chính:
+🔹 Nhóm 1: Doanh Nghiệp Cần Dịch Vụ Giặt, Wash, Nhuộm
+✔ Loại hình doanh nghiệp: Nhà máy sản xuất may mặc, công ty xuất khẩu may mặc, nhà máy sản xuất vải, xưởng nhuộm, giặt công nghiệp.
+✔ Quy mô: Doanh nghiệp vừa & lớn (Nhà máy ≥ 50 công nhân, sản xuất số lượng lớn).
+✔ Nhu cầu:
+* Cần đối tác giặt công nghiệp số lượng lớn.
+* Tìm giải pháp wash vải cao cấp, chống co rút.
+* Tối ưu chi phí giặt & wash để giảm giá thành sản xuất.
+✔ Người ra quyết định: CEO, Giám đốc sản xuất, Trưởng bộ phận mua hàng.
+✔ Kênh tiếp cận:
+* Google Search (Tìm kiếm nhà cung cấp dịch vụ).
+* LinkedIn (CEO & Quản lý cấp cao).
+* Hội chợ ngành dệt may.
+🔹 Nhóm 2: Nhà Cung Cấp Dịch Vụ May Gia Công
+✔ Loại hình doanh nghiệp: Xưởng may gia công, nhà máy sản xuất quần áo xuất khẩu.
+✔ Quy mô: Xưởng may có ≥ 50 máy may công nghiệp.
+✔ Nhu cầu:
+   * Cần khách hàng đặt may gia công số lượng lớn.
+   * Tìm nguồn cung cấp vải đã wash, nhuộm sẵn để sản xuất nhanh hơn.
+✔ Người ra quyết định: Chủ xưởng may, Quản lý sản xuất.
+✔ Kênh tiếp cận:
+   * Facebook Ads (Tiếp cận chủ xưởng may).
+   * Quảng cáo Zalo (Tìm kiếm khách hàng trong nước).
+🔹 Nhóm 3: Doanh Nghiệp Xuất Khẩu May Mặc & Nhãn Hàng
+✔ Loại hình doanh nghiệp: Công ty xuất khẩu thời trang, thương hiệu thời trang nội địa.
+✔ Quy mô: Doanh thu từ 10 tỷ/năm trở lên.
+✔ Nhu cầu:
+      * Tìm nhà cung cấp gia công & wash vải đạt tiêu chuẩn quốc tế.
+      * Cần giặt công nghiệp số lượng lớn trước khi xuất khẩu.
+✔ Người ra quyết định: Giám đốc điều hành, Trưởng phòng xuất khẩu.
+✔ Kênh tiếp cận:
+      * Google Display Ads (Quảng cáo trên báo chí ngành dệt may).
+      * LinkedIn (Tiếp cận giám đốc & quản lý cấp cao).
+________________
+
+
+2️⃣ Tiêu Chí Đánh Giá Khách Hàng Tiềm Năng (Lead Scoring)
+📌 Mục tiêu:
+✅ Xếp hạng khách hàng theo mức độ tiềm năng để Sales ưu tiên xử lý.
+✅ Giảm chi phí Marketing & Sales bằng cách tập trung vào khách hàng có nhu cầu cao.
+✅ Tự động phân loại khách hàng tiềm năng dựa trên hành vi.
+📢 Cách chấm điểm khách hàng tiềm năng:
+📌 Hành vi trên Website & Landing Page:
+✔ Truy cập trang “Bảng Giá” >2 lần → +20 điểm
+✔ Tải báo giá / tài liệu sản phẩm → +30 điểm
+✔ Điền form đăng ký tư vấn → +50 điểm (Hot Lead - Cần tư vấn ngay)
+📌 Hành vi trong Email Marketing:
+✔ Mở email nhưng không nhấp vào link → +10 điểm
+✔ Nhấp vào link trong email → +20 điểm
+✔ Trả lời email & yêu cầu tư vấn → +40 điểm
+📌 Thông tin doanh nghiệp:
+✔ Công ty sản xuất may mặc lớn (>200 nhân sự) → +50 điểm
+✔ Xưởng may gia công vừa (50-200 nhân sự) → +30 điểm
+✔ Công ty nhỏ (<50 nhân sự) → +10 điểm
+📌 Mức độ tương tác với Sales:
+✔ Khách hàng đã xem báo giá nhưng chưa phản hồi → +20 điểm
+✔ Khách hàng gọi điện yêu cầu tư vấn → +50 điểm
+✔ Khách hàng phản hồi tích cực nhưng chưa đặt đơn → +30 điểm
+📢 Phân loại Lead theo điểm số:
+         * Hot Lead (≥ 80 điểm): Sales liên hệ ngay lập tức.
+         * Warm Lead (50-79 điểm): Gửi Email/SMS Reminder, Sales follow-up trong 3 ngày.
+         * Cold Lead (< 50 điểm): Tiếp tục nuôi dưỡng qua Email/SMS Marketing.
+🔥 Mục tiêu:
+         * Tự động phân loại khách hàng & tối ưu quy trình Sales.
+         * Giúp đội Sales không lãng phí thời gian vào Lead không tiềm năng.
+         * Tăng tỷ lệ chuyển đổi & tối ưu chi phí Marketing.
